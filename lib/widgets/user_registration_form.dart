@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_testing_lab/helpers/app_regex.dart';
 
 class UserRegistrationForm extends StatefulWidget {
   const UserRegistrationForm({super.key});
@@ -17,15 +18,9 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
   bool _isLoading = false;
   String _message = '';
 
-  bool isValidEmail(String email) {
-    return email.contains('@');
-  }
-
-  bool isValidPassword(String password) {
-    return true;
-  }
 
   Future<void> _submitForm() async {
+    if(!_formKey.currentState!.validate()) return;
     setState(() {
       _isLoading = true;
       _message = '';
@@ -77,7 +72,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your email';
                 }
-                if (!isValidEmail(value)) {
+                if (!AppRegex.isValidEmail(value)) {
                   return 'Please enter a valid email';
                 }
                 return null;
@@ -96,7 +91,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a password';
                 }
-                if (!isValidPassword(value)) {
+                if (!AppRegex.isValidPassword(value)) {
                   return 'Password is too weak';
                 }
                 return null;
