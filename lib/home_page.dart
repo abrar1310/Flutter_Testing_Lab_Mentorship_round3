@@ -3,6 +3,8 @@ import 'package:flutter_testing_lab/widgets/shopping_cart.dart';
 import 'package:flutter_testing_lab/widgets/user_registration_form.dart';
 import 'package:flutter_testing_lab/widgets/weather_display.dart';
 
+import 'controllers/cart_controller.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -14,16 +16,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late TabController _tabController;
   int _currentIndex = 0;
 
-  final List<Tab> _tabs = [
-    const Tab(icon: Icon(Icons.person_add), text: 'Registration'),
-    const Tab(icon: Icon(Icons.shopping_cart), text: 'Shopping Cart'),
-    const Tab(icon: Icon(Icons.wb_sunny), text: 'Weather'),
-  ];
-
-  final List<Widget> _tabViews = [
-    const UserRegistrationForm(),
-    const ShoppingCart(),
-    const WeatherDisplay(),
+  final CartController _cartController = CartController();
+  late final List<Widget> _tabViews;
+  final List<Tab> _tabs = const [
+    Tab(icon: Icon(Icons.person_add), text: 'Registration'),
+    Tab(icon: Icon(Icons.shopping_cart), text: 'Shopping Cart'),
+    Tab(icon: Icon(Icons.wb_sunny), text: 'Weather'),
   ];
 
   @override
@@ -35,6 +33,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         _currentIndex = _tabController.index;
       });
     });
+    _tabViews = [
+      const UserRegistrationForm(),
+      ShoppingCart(controller: _cartController),
+      const WeatherDisplay(),
+    ];
   }
 
   @override

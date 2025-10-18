@@ -1,166 +1,93 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_testing_lab/controllers/cart_controller.dart';
+import 'package:flutter_testing_lab/models/cart_model.dart';
 
-class CartItem {
-  final String id;
-  final String name;
-  final double price;
-  int quantity;
-  final double discount; // Discount percentage (0.0 to 1.0)
+class ShoppingCart extends StatelessWidget {
+  final CartController controller;
 
-  CartItem({
-    required this.id,
-    required this.name,
-    required this.price,
-    this.quantity = 1,
-    this.discount = 0.0,
-  });
-}
-
-class ShoppingCart extends StatefulWidget {
-  const ShoppingCart({super.key});
-
-  @override
-  State<ShoppingCart> createState() => _ShoppingCartState();
-}
-
-class _ShoppingCartState extends State<ShoppingCart> {
-  final List<CartItem> _items = [];
-
-  void addItem(String id, String name, double price, {double discount = 0.0}) {
-    setState(() {
-      _items.add(
-        CartItem(id: id, name: name, price: price, discount: discount),
-      );
-    });
-  }
-
-  void removeItem(String id) {
-    setState(() {
-      _items.removeWhere((item) => item.id == id);
-    });
-  }
-
-  void updateQuantity(String id, int newQuantity) {
-    setState(() {
-      final index = _items.indexWhere((item) => item.id == id);
-      if (index != -1) {
-        if (newQuantity <= 0) {
-          _items.removeAt(index);
-        } else {
-          _items[index].quantity = newQuantity;
-        }
-      }
-    });
-  }
-
-  void clearCart() {
-    setState(() {
-      _items.clear();
-    });
-  }
-
-  double get subtotal {
-    double total = 0;
-    for (var item in _items) {
-      total += item.price * item.quantity;
-    }
-    return total;
-  }
-
-  double get totalDiscount {
-    double discount = 0;
-    for (var item in _items) {
-      discount += item.discount * item.quantity;
-    }
-    return discount;
-  }
-
-  double get totalAmount {
-    return subtotal + totalDiscount;
-  }
-
-  int get totalItems {
-    return _items.fold(0, (sum, item) => sum + item.quantity);
-  }
+  const ShoppingCart({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Wrap(
-          spacing: 8,
+    return ValueListenableBuilder<List<CartItem>>(
+      valueListenable: controller.itemsNotifier,
+      builder: (context, items, _) {
+        return Column(
           children: [
-            ElevatedButton(
-              onPressed: () =>
-                  addItem('1', 'Apple iPhone', 999.99, discount: 0.1),
-              child: const Text('Add iPhone'),
+            Wrap(
+              spacing: 8,
+              children: [
+                ElevatedButton(
+                  onPressed: () =>
+                      controller.addItem(
+                          '1', 'Apple iPhone', 999.99, discount: 0.1),
+                  child: const Text('Add iPhone'),
+                ),
+                ElevatedButton(
+                  onPressed: () =>
+                      controller.addItem(
+                          '2', 'Samsung Galaxy', 899.99, discount: 0.15),
+                  child: const Text('Add Galaxy'),
+                ),
+                ElevatedButton(
+                  onPressed: () => controller.addItem('3', 'iPad Pro', 1099.99),
+                  child: const Text('Add iPad'),
+                ),
+                ElevatedButton(
+                  onPressed: () =>
+                      controller.addItem(
+                          '1', 'Apple iPhone', 999.99, discount: 0.1),
+                  child: const Text('Add iPhone Again'),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () =>
-                  addItem('2', 'Samsung Galaxy', 899.99, discount: 0.15),
-              child: const Text('Add Galaxy'),
-            ),
-            ElevatedButton(
-              onPressed: () => addItem('3', 'iPad Pro', 1099.99),
-              child: const Text('Add iPad'),
-            ),
-            ElevatedButton(
-              onPressed: () =>
-                  addItem('1', 'Apple iPhone', 999.99, discount: 0.1),
-              child: const Text('Add iPhone Again'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total Items: $totalItems'),
-                  ElevatedButton(
-                    onPressed: clearCart,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Total Items: ${controller.totalItems}'),
+                      ElevatedButton(
+                        onPressed: controller.clearCart,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Clear Cart'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Subtotal: \$${controller.subtotal.toStringAsFixed(2)}'),
+                  Text('Total Discount: \$${controller.totalDiscount
+                      .toStringAsFixed(2)}'),
+                  const Divider(),
+                  Text(
+                    'Total Amount: \$${controller.totalAmount.toStringAsFixed(
+                        2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
-                    child: const Text('Clear Cart'),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text('Subtotal: \$${subtotal.toStringAsFixed(2)}'),
-              Text('Total Discount: \$${totalDiscount.toStringAsFixed(2)}'),
-              const Divider(),
-              Text(
-                'Total Amount: \$${totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
+            ),
+            const SizedBox(height: 16),
 
-        _items.isEmpty
-            ? const Center(child: Text('Cart is empty'))
-            : ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _items.length,
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  final itemTotal = item.price * item.quantity;
-
+        controller.items.isEmpty
+        ? const Center(child: Text('Cart is empty'))
+            : Column(
+        children: controller.items.map((item) {
+        final itemTotal = item.price * item.quantity;
                   return Card(
                     child: ListTile(
                       title: Text(item.name),
@@ -172,7 +99,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                           ),
                           if (item.discount > 0)
                             Text(
-                              'Discount: ${(item.discount * 100).toStringAsFixed(0)}%',
+                              'Discount: ${(item.discount * 100)
+                                  .toStringAsFixed(0)}%',
                               style: const TextStyle(color: Colors.green),
                             ),
                           Text('Item Total: \$${itemTotal.toStringAsFixed(2)}'),
@@ -183,7 +111,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                         children: [
                           IconButton(
                             onPressed: () =>
-                                updateQuantity(item.id, item.quantity - 1),
+                                controller.updateQuantity(
+                                    item.id, item.quantity - 1),
                             icon: const Icon(Icons.remove),
                           ),
                           Container(
@@ -199,11 +128,12 @@ class _ShoppingCartState extends State<ShoppingCart> {
                           ),
                           IconButton(
                             onPressed: () =>
-                                updateQuantity(item.id, item.quantity + 1),
+                                controller.updateQuantity(
+                                    item.id, item.quantity + 1),
                             icon: const Icon(Icons.add),
                           ),
                           IconButton(
-                            onPressed: () => removeItem(item.id),
+                            onPressed: () => controller.removeItem(item.id),
                             icon: const Icon(Icons.delete),
                             color: Colors.red,
                           ),
@@ -212,8 +142,10 @@ class _ShoppingCartState extends State<ShoppingCart> {
                     ),
                   );
                 },
-              ),
-      ],
+              ).toList(),
+        )],
+        );
+      },
     );
   }
 }
